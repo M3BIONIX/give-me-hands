@@ -1,5 +1,6 @@
+import express from "express";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -77,13 +78,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   throw new Error("Tool not found");
 });
 
-async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("Secure Terminal MCP Server running on stdio");
-}
+const app = express();
+const port = 3000;
 
-main().catch((error) => {
-  console.error("Server error:", error);
-  process.exit(1);
+let transport;
+
+app.get("/sse", async (req, res) => {
+  transport = new SSEServerTransport("/messages", res);
+  await server.connect(transport);
+});
+
+app.post("/messages", async (req, res) => {
+  if (transport) {
+    await transport.handlePostMessage(req, res);
+  } else {
+    res.status(400).send("No active SSE connection");
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Secure Terminal MCP Server (SSE) listening on port ${port}`);
 });
