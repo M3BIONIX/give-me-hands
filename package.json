@@ -1,0 +1,13 @@
+{
+  "name": "give-me-hands",
+  "version": "1.0.0",
+  "description": "Secure command execution MCP server",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest"
+  }
+}
